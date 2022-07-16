@@ -1,5 +1,12 @@
 {
+  "name": "jsp-discord-bot",
+  "version": "0.0.1-SNAPSHOT",
   "dependencies": {
-    "discord.js": "^13.8.1"
+    "discord.js": "^13.8.1",
+    "@discordjs/rest": "^0.2.0-canary.0",
+    "chalk": "^4.0.0",
+    "fs": "0.0.1-security",
+    "moment": "^2.24.0",
+    "quick.db": "^7.1.1"
   }
 }
