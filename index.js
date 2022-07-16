@@ -9,16 +9,9 @@ const client = new Discord.Client({
 });
 
 client.on('ready', () => {
-    client.channels.fetch('802229980867199026').then((channel) => {
-        channel.messages.fetch('996336354348777552').then((message) => {
-            message.reactions.cache.forEach(async() => {
-                const r = message.reactions.cache.get('✋');
-                r.users.fetch().then(function (users) {
-                    console.log(users);
-                });
-            });
-        })
-    })
+    client.users.fetch('232941232748232716').then((user) => {
+        console.log(user);
+    });
 });
 
 client.login(config.token);
