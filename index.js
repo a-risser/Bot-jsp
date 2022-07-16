@@ -24,9 +24,9 @@ client.on('ready', () => {
                     message.reactions.cache.forEach(async(reaction) => {
                         // Liste des utilisateurs ayant répondus avec l'icone '✋'
                         if (reaction._emoji.name === '✋') {
-                            reaction.users.fetch().then(function (user) {
+                            reaction.users.fetch().then(function (users) {
                                 // La liste de tout les utilisateur ayant répondu.
-                                user.forEach((member) => {
+                                users.forEach((member) => {
                                     allUsersResponded.push(member);
                                 })
                                 const utilisateurPurger = allUsers.filter(f => !allUsersResponded.includes(f));
