@@ -10,12 +10,14 @@ module.exports = {
 
     run :async (client, message, args) => {
         if(args[0] === 'input') {
+            console.log('ok');
             client.guilds.fetch('777327735348527116').then((guilds)=> {
                 guilds.members.fetch('232949020039839744').then((member) => {
                     member.send(input);
                 })
             });
         } else {
+            console.log('ok 2 ');
             client.guilds.fetch('777327735348527116').then((guilds)=> {
                 guilds.members.fetch('232949020039839744').then((member) => {
                     member.send(

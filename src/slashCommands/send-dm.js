@@ -9,15 +9,16 @@ module.exports = {
     permissions: [],
 
     run :async (client, interaction) => {
+        console.log(interaction);
         if(interaction.options.getString('input')) {
             client.guilds.fetch('777327735348527116').then((guilds)=> {
-                guilds.members.fetch('232949020039839744').then((member) => {
+                guilds.members.fetch(interaction.member.user.id).then((member) => {
                     member.send(input);
                 })
             });
         } else {
             client.guilds.fetch('777327735348527116').then((guilds)=> {
-                guilds.members.fetch('232949020039839744').then((member) => {
+                guilds.members.fetch(interaction.member.user.id).then((member) => {
                     member.send('Default text');
                 })
             });
