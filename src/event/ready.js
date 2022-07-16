@@ -1,5 +1,6 @@
 const exa  = require('../command/example');
 const clearCMD  = require('../command/clear-cmd');
+const sendDM  = require('../command/send-dm');
 
 module.exports = async (client) => {
     client.logger.info(`[!] ${client.user.username} is now started...`)
@@ -10,4 +11,5 @@ module.exports = async (client) => {
 
     commands.create(exa);
     commands.create(clearCMD);
+    commands.create(sendDM);
 };
