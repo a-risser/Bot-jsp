@@ -9,10 +9,18 @@ const client = new Discord.Client({
 });
 
 client.on('ready', () => {
-    client.users.fetch('232941232748232716').then((user) => {
-        console.log(user);
-    });
+    client.channels.fetch('802229980867199026').then((channel) => {
+        channel.messages.fetch('996336354348777552').then((message) => {
+            message.reactions.cache.forEach(async(reaction) => {
+                // Liste des utilisateurs ayant répondus avec l'icone '✋'
+                if (reaction._emoji.name === '✋') {
+                    reaction.users.fetch().then(function (users) {
+                        console.log(users);
+                    });
+                }
+            });
+        })
+    })
 });
 
 client.login(config.token);
-console.log ('test');
