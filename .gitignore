@@ -107,4 +107,4 @@ dist
 .vscode/
 package-lock.json
 
-config.json
+config.js
