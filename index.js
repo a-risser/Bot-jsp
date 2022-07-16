@@ -22,3 +22,4 @@ client.on('ready', () => {
 });
 
 client.login(config.token);
+console.log ('test');
