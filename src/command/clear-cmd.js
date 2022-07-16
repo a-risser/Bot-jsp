@@ -1,9 +1,9 @@
 module.exports = {
-    name: 'purge',
+    name: 'clear-cmd',
     description: 'Purge le channel CMD.',
-    usage: '<prefix>purge ', //OPTIONAL (for the help cmd)
-    examples: ['purge'], //OPTIONAL (for the help cmd)
-    aliases: ['pg'],
+    usage: '<prefix>clear-cmd ', //OPTIONAL (for the help cmd)
+    examples: ['clear-cmd'], //OPTIONAL (for the help cmd)
+    aliases: ['ccmd'],
     dir: "command",
     cooldown: 1, // Cooldown in seconds, by default it's 2 seconds | OPTIONAL
     permissions: [], // OPTIONAL

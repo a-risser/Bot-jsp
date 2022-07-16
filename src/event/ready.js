@@ -1,6 +1,5 @@
-const { config } = require("../../config");
 const exa  = require('../command/example');
-const purge  = require('../command/purge');
+const clearCMD  = require('../command/clear-cmd');
 
 module.exports = async (client) => {
     client.logger.info(`[!] ${client.user.username} is now started...`)
@@ -10,5 +9,5 @@ module.exports = async (client) => {
     let commands = client.application?.commands;
 
     commands.create(exa);
-    commands.create(purge);
+    commands.create(clearCMD);
 };
