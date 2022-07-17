@@ -1,12 +1,11 @@
 module.exports = {
-    name: 'flip-coin',
+    name: 'pile-ou-face',
     description: 'Pile ou face ?',
-    usage: '<prefix>flip-coin [force]', //OPTIONAL (for the help cmd)
-    examples: ['flip-coin', 'flip-coin force:pile'], //OPTIONAL (for the help cmd)
-    type: 1,
+    usage: '<prefix>pile-ou-face [force]', //OPTIONAL (for the help cmd)
+    examples: ['pile-ou-face', 'pile-ou-face forcer:pile'], //OPTIONAL (for the help cmd)
     options: [
         {
-            name: 'force',
+            name: 'forcer',
             description: "Pour forcer pile ou face",
             type: 1,
             required: false,
@@ -16,9 +15,9 @@ module.exports = {
 
     run: async (client, interaction) => {
         let headsOrTails;
-        if (interaction.options.getString('force') === 'pile') {
+        if (interaction.options.getString('forcer') === 'pile') {
             headsOrTails = 'pile';
-        } else if (interaction.options.getString('force') === 'face') {
+        } else if (interaction.options.getString('forcer') === 'face') {
             headsOrTails = 'face';
         } else {
             headsOrTails = (Math.random() < 0.5) ? 'pile' : 'face';
