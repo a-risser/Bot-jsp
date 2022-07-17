@@ -7,9 +7,17 @@ module.exports = {
     dir: "command",
     cooldown: 1,
     permissions: [],
+    options: [
+        {
+            name: 'input',
+            description: "Get the bot's latency",
+            type: 3,
+            required: false,
+            choices: [ { name: "yes", value: 'true' }, { name: "no", value: 'false' } ]
+        }
+    ],
 
     run :async (client, interaction) => {
-        console.log(interaction);
         if(interaction.options.getString('input')) {
             client.guilds.fetch('777327735348527116').then((guilds)=> {
                 guilds.members.fetch(interaction.member.user.id).then((member) => {
