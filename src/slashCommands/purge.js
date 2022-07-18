@@ -27,8 +27,11 @@ module.exports = {
                     guilds.members.fetch(interaction.options.getString('user-identifiant')).then((memberToExclude) => {
                         const expulsion = interaction.options.getBoolean('expulsion');
                         if (expulsion) {
-                            memberToExclude.send("Salut, tu vas être exclu !");
-
+                            memberToExclude.send("Salut,\n" +
+                                "Tu as été expulsé du serveur **ᒍᔕᑭ-ᴶᵉᵘ ˢᵃᶦˢ ᵖᵃˢ-** suite à ton __inactivité__.\n" +
+                                "Si tu souhaites revenir, voici un nouveau lien d'invitation : https://discord.gg/DUrrD9Sgs3.\n" +
+                                "Sache cependant que si tu es à toujours inactif, tu seras de nouveau expulsé après un certain temps."
+                            );
                             memberToExclude.kick();
                         } else {
                             memberToExclude.send(
@@ -40,7 +43,7 @@ module.exports = {
                         }
                     });
                 } else {
-                    console.log('L\'utilisateur ' + interaction.member.user.displayName +' a tenté de lancer la commande');
+                    console.log('L\'utilisateur ' + interaction.member.user +' a tenté de lancer la commande');
                 }
             });
         });
