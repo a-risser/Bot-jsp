@@ -39,6 +39,8 @@ module.exports = {
                             );
                         }
                     });
+                } else {
+                    console.log('L\'utilisateur ' + interaction.member.user.displayName +' a tenté de lancer la commande');
                 }
             });
         });
