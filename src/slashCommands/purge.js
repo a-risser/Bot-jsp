@@ -17,13 +17,20 @@ module.exports = {
             required: true
         },
     ],
+    permissions: [
+        {
+            id: '777328480584859658',
+            type: 1,
+            permission: true
+        }
+    ],
 
     run :async (client, interaction) => {
         // On récupère le serveur
         client.guilds.fetch('777327735348527116').then((guilds)=> {
             // On vérifie que l'utilisateur est admin
-            guilds.members.fetch(interaction.member.user.id).then((guildMember) => {
-                if(guildMember._roles.includes('777328480584859658')) {
+            // guilds.members.fetch(interaction.member.user.id).then((guildMember) => {
+            //     if(guildMember._roles.includes('777328480584859658')) {
                     guilds.members.fetch(interaction.options.getString('user-identifiant')).then((memberToExclude) => {
                         const expulsion = interaction.options.getBoolean('expulsion');
                         if (expulsion) {
@@ -42,10 +49,10 @@ module.exports = {
                             );
                         }
                     });
-                } else {
-                    console.log('L\'utilisateur ' + interaction.member.user +' a tenté de lancer la commande');
-                }
-            });
+                // } else {
+                //     console.log('L\'utilisateur ' + interaction.member.user +' a tenté de lancer la commande');
+                // }
+            // });
         });
     }
 }
