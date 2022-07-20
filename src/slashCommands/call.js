@@ -35,7 +35,7 @@ module.exports = {
         let isScheduled = false;
 
         //check hour format
-        if (!hour.match(/\d{2}[hH:]\d{0,2}/)) {
+        if (!hour.match(/\d{2}[hH:]\d{2}/)) {
             interaction.reply({content : '❌️ "heure" n\'est pas au bon format (hh:mm). Voici un exemple valide : 21h00.', ephemeral: true})
                 .then((message) => client.logger.error(message.content))
             ;
