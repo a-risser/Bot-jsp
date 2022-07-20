@@ -1,6 +1,6 @@
 module.exports = {
     name: 'call',
-    description: 'call',
+    description: 'Faire un call pour proposer une session de jeu, ajoutez une date pour les calls de +24h',
     usage: '<prefix>call [@jeu] [hour] [date]', //OPTIONAL (for the help cmd)
     examples: ['call jeu:@Among us heure:21h00 date:25/12/2022'], //OPTIONAL (for the help cmd)
     cooldown: 10, // Cooldown in seconds, by default it's 2 seconds | OPTIONAL
@@ -8,19 +8,19 @@ module.exports = {
     options: [
         {
             name: 'jeu',
-            description: "jeu concerné",
+            description: "Jeu concerné par le call.",
             type: 8,
             required: true,
         },
         {
             name: 'heure',
-            description: "heure de la session de jeu",
+            description: "Heure de la session de jeu.",
             type: 3,
             required: true,
         },
         {
             name: 'date',
-            description: "date de la session de jeu",
+            description: "Date de la session de jeu, uniquement si dans +24h.",
             type: 3,
             required: false,
         }
@@ -44,7 +44,7 @@ module.exports = {
         //replace 'H' or ':' by 'h'
         hour = hour.replace(/[H:]/g, 'h');
 
-        quiJoueChannel.send({ content: interaction.user.username + ' veut jouer à <@&' + game + '> à ' + hour + '.' })
+        quiJoueChannel.send({ content: '*'+ interaction.user.username + '* veut jouer à <@&' + game + '> à ' + hour + '.' })
             .then(message => {
                 message.react("👍");
                 message.react("👎");
