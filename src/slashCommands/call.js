@@ -27,7 +27,7 @@ module.exports = {
     ],
     run: async (client, interaction) => {
         let jspGuild = client.guilds.resolve(client.config.guildId);
-        let quiJoueChannel = jspGuild.channels.resolve('885693782522212392'); //for now: admin cmd
+        let quiJoueChannel = jspGuild.channels.resolve(client.config.channels[0].id); //for now: admin cmd
         let game = interaction.options.getRole('game');
         let hour = interaction.options.getString('hour');
 
