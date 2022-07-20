@@ -2,18 +2,18 @@ module.exports = {
     name: 'call',
     description: 'call',
     usage: '<prefix>call [@jeu] [hour] [date]', //OPTIONAL (for the help cmd)
-    examples: ['call jeu:@Among us hour:21h30 date:25/12/2022'], //OPTIONAL (for the help cmd)
+    examples: ['call jeu:@Among us heure:21h00 date:25/12/2022'], //OPTIONAL (for the help cmd)
     cooldown: 10, // Cooldown in seconds, by default it's 2 seconds | OPTIONAL
     permissions: [], // OPTIONAL
     options: [
         {
-            name: 'game',
+            name: 'jeu',
             description: "jeu concerné",
             type: 8,
             required: true,
         },
         {
-            name: 'hour',
+            name: 'heure',
             description: "heure de la session de jeu",
             type: 3,
             required: true,
@@ -26,19 +26,46 @@ module.exports = {
         }
     ],
     run: async (client, interaction) => {
-        let jspGuild = client.guilds.resolve(client.config.guildId);
-        let quiJoueChannel = jspGuild.channels.resolve(client.config.channels[0].id); //for now: admin cmd
-        let game = interaction.options.getRole('game');
-        let hour = interaction.options.getString('hour');
+        const jspGuild = client.guilds.resolve(client.config.guildId);
+        const quiJoueChannel = jspGuild.channels.resolve(client.config.channelCmdAdminId); //todo - replace it by : client.config.channelQuiJoueId
+
+        let game = interaction.options.getRole('jeu');
+        let hour = interaction.options.getString('heure');
+        let date = interaction.options.getString('date');
+        let isScheduled = false;
+
+        //check hour format
+        if (!hour.match(/\d{2}[hH:]\d{0,2}/)) {
+            interaction.reply({content : '❌️ "heure" n\'est pas au bon format (hh:mm). Voici un exemple valide : 21h00.', ephemeral: true})
+                .then((message) => client.logger.error(message.content))
+            ;
+            return;
+        }
+        //replace 'H' or ':' by 'h'
+        hour = hour.replace(/[H:]/g, 'h');
 
         quiJoueChannel.send({ content: interaction.user.username + ' veut jouer à <@&' + game + '> à ' + hour + '.' })
             .then(message => {
                 message.react("👍");
                 message.react("👎");
 
+                //If date = scheduled call
+                if (date) {
+                    if (!date.match(/\d{2}\/\d{2}\/\d{4}/)) {
+                        interaction.reply({content : '❌️ "date" n\'est pas au bon format (jj/mm/hhhh). Voici un exemple valide : 25/12/2022.', ephemeral: true})
+                            .then((message) => client.logger.error(message.content))
+                        ;
+                        return;
+                    }
+                    isScheduled = true;
+                    //jspGuild.scheduledEvents.create();
+                }
+
+                //Create thread
+                let archiveDuration = isScheduled ? 'MAX' : 1440; //maximum (1 week actually) or 1 day. Doc: https://discord-api-types.dev/api/discord-api-types-v10/enum/ThreadAutoArchiveDuration
                 message.startThread({
                     name: 'Call ' + game.name + ' à ' + hour,
-                    autoArchiveDuration: 'MAX',
+                    autoArchiveDuration: archiveDuration,
                     type: 'GUILD_PUBLIC_THREAD',
                     reason: 'Discuss about the call'
                 })
