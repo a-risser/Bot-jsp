@@ -1,47 +1,49 @@
-// /call instant [@jeu] [heure].
-// Ajout du call dans 🔍│qui_joue + création d'un fil.
-// /call scheduled [@jeu] [jour/mois/année] [heure/minute].
-// Création d'un événement + ajout du call dans 🔍│qui_joue avec le lien de l'event + création d'un fil.
-
 module.exports = {
     name: 'call',
-    description: 'Lancer un call pour un jeu dans le channel "qui joue".',
-    usage: '<prefix>call [type] [jeu]', //OPTIONAL (for the help cmd)
-    examples: [], //OPTIONAL (for the help cmd)
-    cooldown: 1, // Cooldown in seconds, by default it's 2 seconds | OPTIONAL
+    description: 'call',
+    usage: '<prefix>call [@jeu] [hour] [date]', //OPTIONAL (for the help cmd)
+    examples: ['call jeu:@Among us hour:21h30 date:25/12/2022'], //OPTIONAL (for the help cmd)
+    cooldown: 10, // Cooldown in seconds, by default it's 2 seconds | OPTIONAL
     permissions: [], // OPTIONAL
     options: [
         {
-            name: 'type',
-            description: "Type de call à créer",
-            type: 3,
+            name: 'game',
+            description: "jeu concerné",
+            type: 8,
             required: true,
-            choices: [
-                { name: "instant", value: "instant" },
-                { name: "programme", value: "programme" }
-            ]
         },
         {
-            name: 'jeu',
-            description: "Le jeu auquel tu veux jouer",
+            name: 'hour',
+            description: "heure de la session de jeu",
             type: 3,
-            required: true
+            required: true,
+        },
+        {
+            name: 'date',
+            description: "date de la session de jeu",
+            type: 3,
+            required: false,
         }
     ],
+    run: async (client, interaction) => {
+        let jspGuild = client.guilds.resolve(client.config.guildId);
+        let quiJoueChannel = jspGuild.channels.resolve('885693782522212392'); //for now: admin cmd
+        let game = interaction.options.getRole('game');
+        let hour = interaction.options.getString('hour');
 
-    run :async (client, interaction) => {
-        const jeu = interaction.options.getString('jeu');
-        client.guilds.fetch('777327735348527116').then((guilds)=> {
-            guilds.channels.fetch('986383828723568660').then((channel) => {
-                message = channel.send('On cherche du monde pour jouer à ' + jeu);
-                console.log(lastMessage);
-                if (lastMessage.author.bot) {
-                    lastMessage.startThread({
-                        name: 'On cherche du monde pour jouer !',
-                        reason: 'On cherche du monde pour jouer !',
-                    });
-                }
+        quiJoueChannel.send({ content: interaction.user.username + ' veut jouer à <@&' + game + '> à ' + hour + '.' })
+            .then(message => {
+                message.react("👍");
+                message.react("👎");
+
+                message.startThread({
+                    name: 'Call ' + game.name + ' à ' + hour,
+                    autoArchiveDuration: 'MAX',
+                    type: 'GUILD_PUBLIC_THREAD',
+                    reason: 'Discuss about the call'
+                })
+
+                interaction.reply({content : 'Call créé avec succès dans le salon <#' + quiJoueChannel + '>.', ephemeral: true});
             })
-        });
     }
 }
