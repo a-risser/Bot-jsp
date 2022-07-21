@@ -26,13 +26,41 @@ module.exports = {
         }
     ],
     run: async (client, interaction) => {
+
+        //function to post the message + thread
+        function postMessage(event) {
+
+            let content = event ? '**'+ interaction.user.username + '** veut jouer à <@&' + game + '> le **' + date + '** à **' + time + '** .\n' + event.url : '**'+ interaction.user.username + '** veut jouer à <@&' + game + '> à **' + time + '**.';
+
+            quiJoueChannel.send({ content: content })
+                .then(message => {
+                    //Add reactions
+                    message.react("👍");
+                    message.react("👎");
+
+                    //Create thread
+                    let archiveDuration = event ? 'MAX' : 1440; //1 day. Doc: https://discord.js.org/#/docs/main/stable/typedef/ThreadAutoArchiveDuration
+                    message.startThread({
+                        name: 'Call ' + game.name + ' à ' + time,
+                        autoArchiveDuration: archiveDuration,
+                        type: 'GUILD_PUBLIC_THREAD',
+                        reason: 'Discuss about the call'
+                    }).catch((error) => {
+                        interaction.reply({content : '❌️ Erreur lors de la création du fil, merci de contacter un Admin'});
+                        client.logger.error('command: call, user:' + interaction.user.username + ', reason: thread creation failed');
+                    });
+
+                    //Send success command message
+                    interaction.reply({content : 'Call créé avec succès dans le salon <#' + quiJoueChannel + '>.', ephemeral: true});
+                })
+        }
+
         const jspGuild = client.guilds.resolve(client.config.guildId);
         const quiJoueChannel = jspGuild.channels.resolve(client.config.channelCmdAdminId); //todo: client.config.channelQuiJoueId
 
         const game = interaction.options.getRole('jeu');
-        let time = interaction.options.getString('heure');
-        const date = interaction.options.getString('date');
 
+        let time = interaction.options.getString('heure');
         //check time format
         let timeRegex = /^([0-1][0-9]|2[0-3])[hH:]([0-5][0-9])$/;
         if (!time.match(timeRegex)) {
@@ -43,40 +71,18 @@ module.exports = {
         //replace 'H' or ':' by 'h'
         time = time.replace(/[H:]/g, 'h');
 
-
-        function postMessage(event) {
-
-            let content = event ? '**'+ interaction.user.username + '** veut jouer à <@&' + game + '> le **' + date + '** à **' + time + '** .\n' + event.url : '**'+ interaction.user.username + '** veut jouer à <@&' + game + '> à **' + time + '**.';
-
-            quiJoueChannel.send({ content: content })
-            .then(message => {
-                //Add reactions
-                message.react("👍");
-                message.react("👎");
-
-                //Create thread
-                let archiveDuration = event ? 'MAX' : 1440; //1 day. Doc: https://discord.js.org/#/docs/main/stable/typedef/ThreadAutoArchiveDuration
-                message.startThread({
-                    name: 'Call ' + game.name + ' à ' + time,
-                    autoArchiveDuration: archiveDuration,
-                    type: 'GUILD_PUBLIC_THREAD',
-                    reason: 'Discuss about the call'
-                }).catch((error) => {
-                    interaction.reply({content : '❌️ Erreur lors de la création du fil, merci de contacter un Admin'});
-                    client.logger.error('command: call, user:' + interaction.user.username + ', reason: thread creation failed');
-                });
-
-                //Send success command message
-                interaction.reply({content : 'Call créé avec succès dans le salon <#' + quiJoueChannel + '>.', ephemeral: true});
-            })
-        }
-
-        if (date) { //** scheduled call **//
+        const date = interaction.options.getString('date');
+        if (!date) { //** instant call **//
+            postMessage();
+        } else { //** scheduled call **//
 
             //check date format
             let dateRegex = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/(\d{4})$/;
             if (!date.match(dateRegex)) {
-                interaction.reply({content : '⚠️️ "date" n\'est pas au bon format. Requis : `ʲʲ/ᵐᵐ/ᵃᵃᵃᵃ` (ex: 25/12/2022).', ephemeral: true});
+                interaction.reply({
+                    content: '⚠️️ "date" n\'est pas au bon format. Requis : `ʲʲ/ᵐᵐ/ᵃᵃᵃᵃ` (ex: 25/12/2022).',
+                    ephemeral: true
+                });
                 client.logger.error('command: call, user:' + interaction.user.username + ', reason: wrong dates format')
                 return;
             }
@@ -92,7 +98,7 @@ module.exports = {
             let minute = parseInt(arrTime[1]);
 
             let startDateObj = new Date(year, month, day, hour, minute);
-            let endDateObj = new Date(year, month, day, hour+1, minute);
+            let endDateObj = new Date(year, month, day, hour + 1, minute);
 
             //Build event
             let event = await jspGuild.scheduledEvents.create({
@@ -104,15 +110,13 @@ module.exports = {
                 scheduledStartTime: startDateObj,
                 scheduledEndTime: endDateObj
             })
-            .then((event) => {
-                postMessage(event);
-            })
-            .catch((error) => {
-                interaction.reply({content : '❌️ Erreur lors de la création de l\'événement, merci de contacter un Admin'});
-                client.logger.error('command: call, user:' + interaction.user.username + ', reason: events creation failed');
-            });
-        } else { //** instant call **//
-            postMessage();
+                .then((event) => {
+                    postMessage(event);
+                })
+                .catch((error) => {
+                    interaction.reply({content: '❌️ Erreur lors de la création de l\'événement, merci de contacter un Admin'});
+                    client.logger.error('command: call, user:' + interaction.user.username + ', reason: events creation failed');
+                });
         }
     }
 }
