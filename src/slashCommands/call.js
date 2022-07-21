@@ -27,35 +27,57 @@ module.exports = {
     ],
     run: async (client, interaction) => {
         const jspGuild = client.guilds.resolve(client.config.guildId);
-        const quiJoueChannel = jspGuild.channels.resolve(client.config.channelCmdAdminId); //todo - replace it by : client.config.channelQuiJoueId
+        const quiJoueChannel = jspGuild.channels.resolve(client.config.channelCmdAdminId); //todo: client.config.channelQuiJoueId
 
-        let game = interaction.options.getRole('jeu');
+        const game = interaction.options.getRole('jeu');
         let time = interaction.options.getString('heure');
-        let date = interaction.options.getString('date');
-        let isScheduled = false;
+        const date = interaction.options.getString('date');
 
         //check time format
         let timeRegex = /^([0-1][0-9]|2[0-3])[hH:]([0-5][0-9])$/;
         if (!time.match(timeRegex)) {
-            interaction.reply({content : '⚠️️ "heure" n\'est pas au bon format. Requis : `ʰʰhᵐᵐ` (ex: 21h00).', ephemeral: true})
-                .then((message) => client.logger.error(message.content))
-            ;
+            interaction.reply({content : '⚠ "heure" n\'est pas au bon format. Requis : `ʰʰhᵐᵐ` (ex: 21h00).', ephemeral: true});
+            client.logger.error('command: call, user:' + interaction.user.username + ', reason: wrong hours format')
             return;
         }
         //replace 'H' or ':' by 'h'
         time = time.replace(/[H:]/g, 'h');
 
-        //Build call content
-        let content = '**'+ interaction.user.username + '** veut jouer à <@&' + game + '> à ' + time + '.'
 
-        //** scheduled call **//
-        if (date) {
+        function postMessage(event) {
+
+            let content = event ? '**'+ interaction.user.username + '** veut jouer à <@&' + game + '> le **' + date + '** à **' + time + '** .\n' + event.url : '**'+ interaction.user.username + '** veut jouer à <@&' + game + '> à **' + time + '**.';
+
+            quiJoueChannel.send({ content: content })
+            .then(message => {
+                //Add reactions
+                message.react("👍");
+                message.react("👎");
+
+                //Create thread
+                let archiveDuration = event ? 'MAX' : 1440; //1 day. Doc: https://discord.js.org/#/docs/main/stable/typedef/ThreadAutoArchiveDuration
+                message.startThread({
+                    name: 'Call ' + game.name + ' à ' + time,
+                    autoArchiveDuration: archiveDuration,
+                    type: 'GUILD_PUBLIC_THREAD',
+                    reason: 'Discuss about the call'
+                }).catch((error) => {
+                    interaction.reply({content : '❌️ Erreur lors de la création du fil, merci de contacter un Admin'});
+                    client.logger.error('command: call, user:' + interaction.user.username + ', reason: thread creation failed');
+                });
+
+                //Send success command message
+                interaction.reply({content : 'Call créé avec succès dans le salon <#' + quiJoueChannel + '>.', ephemeral: true});
+            })
+        }
+
+        if (date) { //** scheduled call **//
+
             //check date format
             let dateRegex = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/(\d{4})$/;
             if (!date.match(dateRegex)) {
-                interaction.reply({content : '⚠️️ "date" n\'est pas au bon format. Requis : `ʲʲ/ᵐᵐ/ᵃᵃᵃᵃ` (ex: 25/12/2022).', ephemeral: true})
-                    .then((message) => client.logger.error(message.content))
-                ;
+                interaction.reply({content : '⚠️️ "date" n\'est pas au bon format. Requis : `ʲʲ/ᵐᵐ/ᵃᵃᵃᵃ` (ex: 25/12/2022).', ephemeral: true});
+                client.logger.error('command: call, user:' + interaction.user.username + ', reason: wrong dates format')
                 return;
             }
 
@@ -73,7 +95,7 @@ module.exports = {
             let endDateObj = new Date(year, month, day, hour+1, minute);
 
             //Build event
-            await jspGuild.scheduledEvents.create({
+            let event = await jspGuild.scheduledEvents.create({
                 name: 'Session ' + game.name,
                 privacyLevel: 2,
                 entityType: 3,
@@ -81,37 +103,16 @@ module.exports = {
                 description: interaction.user.username + ' organise une session de ' + game.name + ' !',
                 scheduledStartTime: startDateObj,
                 scheduledEndTime: endDateObj
-            }).catch((error) => {
-                interaction.reply({content : '❌️ Erreur lors de la création de l\'événement, merci de contacter un Admin'})
-                    .then((message) => client.logger.error(message.content))
-                ;
-            });
-
-            isScheduled = true;
-            content = '**'+ interaction.user.username + '** veut jouer à <@&' + game + '> à ' + time + ' le ' + date + '.'
-        }
-
-        quiJoueChannel.send({ content: content })
-            .then(message => {
-                //Add reactions
-                message.react("👍");
-                message.react("👎");
-
-                //Create thread
-                let archiveDuration = isScheduled ? 'MAX' : 1440; //maximum (1 week actually) or 1 day. Doc: https://discord-api-types.dev/api/discord-api-types-v10/enum/ThreadAutoArchiveDuration
-                message.startThread({
-                    name: 'Call ' + game.name + ' à ' + time,
-                    autoArchiveDuration: archiveDuration,
-                    type: 'GUILD_PUBLIC_THREAD',
-                    reason: 'Discuss about the call'
-                }).catch((error) => {
-                    interaction.reply({content : '❌️ Erreur lors de la création du fil, merci de contacter un Admin'})
-                        .then((message) => client.logger.error(message.content))
-                    ;
-                });
-
-                //Send success command message
-                interaction.reply({content : 'Call créé avec succès dans le salon <#' + quiJoueChannel + '>.', ephemeral: true});
             })
+            .then((event) => {
+                postMessage(event);
+            })
+            .catch((error) => {
+                interaction.reply({content : '❌️ Erreur lors de la création de l\'événement, merci de contacter un Admin'});
+                client.logger.error('command: call, user:' + interaction.user.username + ', reason: events creation failed');
+            });
+        } else { //** instant call **//
+            postMessage();
+        }
     }
 }
