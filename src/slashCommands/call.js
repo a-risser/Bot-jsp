@@ -46,7 +46,7 @@ module.exports = {
         time = time.replace(/[H:]/g, 'h');
 
         //Build call content
-        let content = '*'+ interaction.user.username + '* veut jouer à <@&' + game + '> à ' + time + '.'
+        let content = '**'+ interaction.user.username + '** veut jouer à <@&' + game + '> à ' + time + '.'
 
         //** scheduled call **//
         if (date) {
@@ -88,7 +88,7 @@ module.exports = {
             });
 
             isScheduled = true;
-            content = '*'+ interaction.user.username + '* veut jouer à <@&' + game + '> à ' + time + ' le ' + date + '.'
+            content = '**'+ interaction.user.username + '** veut jouer à <@&' + game + '> à ' + time + ' le ' + date + '.'
         }
 
         quiJoueChannel.send({ content: content })
