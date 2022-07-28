@@ -1,17 +1,11 @@
 module.exports = {
     name: 'call',
-    description: 'Faire un call pour proposer une session de jeu. Ajoutez la date pour les calls dans plus de 24h.',
-    usage: '<prefix>call [@jeu] [hour] [date]', //OPTIONAL (for the help cmd)
-    examples: ['call jeu:@Among us heure:21h00 date:25/12/2022'], //OPTIONAL (for the help cmd)
-    cooldown: 10, // Cooldown in seconds, by default it's 2 seconds | OPTIONAL
-    permissions: [], // OPTIONAL
+    description: 'Faire un call pour proposer une session de jeu.',
+    usage: '<prefix>call [@jeu] [hour] [@jeu1] [@jeu2] [@jeu3] [@jeu4] ',
+    examples: ['call jeu:@Among us heure:21h00 jeu1:@Phasmophobia'],
+    cooldown: 10,
+    permissions: [],
     options: [
-        {
-            name: 'jeu',
-            description: "Jeu concerné par le call.",
-            type: 8,
-            required: true,
-        },
         {
             name: 'heure',
             description: "Heure de la session de jeu, au format ʰʰhᵐᵐ (ex: 21h30).",
@@ -19,46 +13,54 @@ module.exports = {
             required: true,
         },
         {
-            name: 'date',
-            description: "[Uniquement si call dans +24h] Date de la session de jeu, au format ʲʲ/ᵐᵐ/ᵃᵃᵃᵃ (ex: 21/07/2022).",
-            type: 3,
-            required: false,
+            name: 'jeu',
+            description: "Jeu concerné par le call.",
+            type: 8,
+            required: true,
+        },
+        {
+            name: 'jeu1',
+            description: "Jeu concerné par le call.",
+            type: 8,
+            required: false
+        },
+        {
+            name: 'jeu2',
+            description: "Jeu concerné par le call.",
+            type: 8,
+            required: false
+        },
+        {
+            name: 'jeu3',
+            description: "Jeu concerné par le call.",
+            type: 8,
+            required: false
+        },
+        {
+            name: 'jeu4',
+            description: "Jeu concerné par le call.",
+            type: 8,
+            required: false
         }
     ],
     run: async (client, interaction) => {
 
-        //function to post the message + thread
-        function postMessage(event) {
-
-            let content = event ? '**'+ interaction.user.username + '** veut jouer à <@&' + game + '> le **' + date + '** à **' + time + '** .\n' + event.url : '**'+ interaction.user.username + '** veut jouer à <@&' + game + '> à **' + time + '**.';
-
-            quiJoueChannel.send({ content: content })
-                .then(message => {
-                    //Add reactions
-                    message.react("👍");
-                    message.react("👎");
-
-                    //Create thread
-                    let archiveDuration = event ? 'MAX' : 1440; //1 day. Doc: https://discord.js.org/#/docs/main/stable/typedef/ThreadAutoArchiveDuration
-                    message.startThread({
-                        name: 'Call ' + game.name + ' à ' + time,
-                        autoArchiveDuration: archiveDuration,
-                        type: 'GUILD_PUBLIC_THREAD',
-                        reason: 'Discuss about the call'
-                    }).catch((error) => {
-                        interaction.reply({content : '❌️ Erreur lors de la création du fil, merci de contacter un Admin'});
-                        client.logger.error('command: call, user:' + interaction.user.username + ', reason: thread creation failed');
-                    });
-
-                    //Send success command message
-                    interaction.reply({content : 'Call créé avec succès dans le salon <#' + quiJoueChannel + '>.', ephemeral: true});
-                })
-        }
 
         const jspGuild = client.guilds.resolve(client.config.guildId);
         const quiJoueChannel = jspGuild.channels.resolve(client.config.channelCmdAdminId); //todo: client.config.channelQuiJoueId
 
         const game = interaction.options.getRole('jeu');
+        const game1 = interaction.options.getRole('jeu1');
+        const game2 = interaction.options.getRole('jeu2');
+        const game3 = interaction.options.getRole('jeu3');
+        const game4 = interaction.options.getRole('jeu4');
+
+        let arrayGames = [];
+        arrayGames.push(game);
+        if(game1) arrayGames.push(game1);
+        if(game2) arrayGames.push(game2);
+        if(game3) arrayGames.push(game3);
+        if(game4) arrayGames.push(game4);
 
         let time = interaction.options.getString('heure');
         //check time format
@@ -70,53 +72,26 @@ module.exports = {
         }
         //replace 'H' or ':' by 'h'
         time = time.replace(/[H:]/g, 'h');
+        let content = '**'+ interaction.user.username + '** veut jouer';
 
-        const date = interaction.options.getString('date');
-        if (!date) { //** instant call **//
-            postMessage();
-        } else { //** scheduled call **//
+        arrayGames = arrayGames.slice(1);
 
-            //check date format
-            let dateRegex = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/(\d{4})$/;
-            if (!date.match(dateRegex)) {
-                interaction.reply({
-                    content: '⚠️️ "date" n\'est pas au bon format. Requis : `ʲʲ/ᵐᵐ/ᵃᵃᵃᵃ` (ex: 25/12/2022).',
-                    ephemeral: true
-                });
-                client.logger.error('command: call, user:' + interaction.user.username + ', reason: wrong dates format')
-                return;
+        let first = true;
+        arrayGames.forEach(game=> {
+            if (first) {
+                content = content + ' à <@&' + game + '>';
+            } else {
+                content = content + 'ou à <@&' + game + '>';
             }
+            first = false;
+        })
+        content = content + ' à partir de ' + time;
 
-            //Build date object
-            let arrDate = date.split('/');
-            let day = parseInt(arrDate[0]);
-            let month = parseInt(arrDate[1]) - 1;
-            let year = parseInt(arrDate[2]);
-
-            let arrTime = time.split('h');
-            let hour = parseInt(arrTime[0]);
-            let minute = parseInt(arrTime[1]);
-
-            let startDateObj = new Date(year, month, day, hour, minute);
-            let endDateObj = new Date(year, month, day, hour + 1, minute);
-
-            //Build event
-            let event = await jspGuild.scheduledEvents.create({
-                name: 'Session ' + game.name,
-                privacyLevel: 2,
-                entityType: 3,
-                entityMetadata: {location: 'ᒍᔕᑭ-ᴶᵉᵘ ˢᵃᶦˢ ᵖᵃˢ-'},
-                description: interaction.user.username + ' organise une session de ' + game.name + ' !',
-                scheduledStartTime: startDateObj,
-                scheduledEndTime: endDateObj
+        quiJoueChannel.send({ content: content })
+            .then(message => {
+                //Add reactions
+                message.react("👍");
+                message.react("👎");
             })
-                .then((event) => {
-                    postMessage(event);
-                })
-                .catch((error) => {
-                    interaction.reply({content: '❌️ Erreur lors de la création de l\'événement, merci de contacter un Admin'});
-                    client.logger.error('command: call, user:' + interaction.user.username + ', reason: events creation failed');
-                });
-        }
     }
 }
