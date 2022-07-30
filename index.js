@@ -15,6 +15,11 @@ cooldowns = new Collection();
 client.logger = require('./src/utils/logger');
 client.color = require('./src/utils/color.js');
 
+Date.prototype.addHours = function(hoursToAdd) {
+    this.setTime(this.getTime() + (hoursToAdd*60*60*1000));
+    return this;
+}
+
 //SET CONFIG
 client.config = require('./config');
 

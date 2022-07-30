@@ -1,11 +1,12 @@
-const {GetGameEmoji} = require('/src/utils/emoji');
+const {GetGameEmoji} = require('../utils/emoji');
+const {IsValidTimeFormat} = require("../utils/datetime");
 
 module.exports = {
     name: 'call',
     description: 'Faire un call pour proposer une session de jeu.',
-    usage: '<prefix>call [@jeu] [hour] [@jeu1] [@jeu2] [@jeu3] [@jeu4] ',
+    usage: '<prefix>call [@jeu_1] [heure] [@jeu_2] [@jeu_3] [@jeu_4] [@jeu_5] ',
     examples: ['call jeu:@Among us heure:21h00 jeu1:@Phasmophobia'],
-    cooldown: 10,
+    cooldown: 120, //in seconds
     permissions: [],
     options: [
         {
@@ -46,9 +47,9 @@ module.exports = {
         },
     ],
     run: async (client, interaction) => {
-
         const jspGuild = client.guilds.resolve(client.config.guildId);
         const quiJoueChannel = jspGuild.channels.resolve(client.config.channelCmdAdminId); //todo: client.config.channelQuiJoueId
+        const user = interaction.user;
 
         //push all games in an array
         let games = [];
@@ -58,30 +59,30 @@ module.exports = {
             }
         }
 
-        let time = interaction.options.getString('heure');
         //check time format
-        if (!time.match(/^([0-1][0-9]|2[0-3])[hH:]([0-5][0-9])$/)) {
+        const time = interaction.options.getString('heure');
+        if (!IsValidTimeFormat(time)) {
             interaction.reply({content : '⚠ "heure" n\'est pas au bon format. Requis : `ʰʰhᵐᵐ` (ex: 21h00).', ephemeral: true});
-            client.logger.error('command: call, user:' + interaction.user.username + ', reason: wrong hours format')
+            client.logger.error('command: call, user:' + user.username + ', reason: wrong hours format')
             return;
         }
-        //replace 'H' or ':' by 'h'
-        time = time.replace(/[H:]/g, 'h');
+        const formattedTime = time.replace(/[H:]/g, 'h');
 
         //build content and get emojis
-        let content = '**'+ interaction.user.username + '** propose de jouer à ';
         let emojisToAdd = [];
+        let content = '**' + user.username + '** propose de jouer à ';
         for (let [index, game] of games.entries()) {
-            content += '<@&' + game + '>';
+            //add games and conjunction to content
+            content += game.toString();
             if (index === games.length - 2) {
                 content += ' ou ';
             }  else if (index !== games.length - 1) {
                 content += ', ';
             }
-
+            //add game emoji in list
             emojisToAdd.push(GetGameEmoji(game));
         }
-        content += ' à partir de **' + time + '** !';
+        content += ' à partir de **' + formattedTime + '** !';
 
         //send message
         quiJoueChannel.send({ content: content })
@@ -89,11 +90,26 @@ module.exports = {
                 //Add reactions
                 for (const emojiToAdd of emojisToAdd) {
                     message.react(emojiToAdd).catch((error) => {
-                        client.logger.error('command: call, user:' + interaction.user.username + ', reason: ' + error);
+                        client.logger.error('command: call, user:' + user.username + ', reason: ' + error);
                     });
                 }
+
+                //Create thread
+                message.startThread({
+                    name: 'Merci d\'en discuter dans ce fil',
+                    autoArchiveDuration: 60,
+                }).catch((error) => {
+                    interaction.reply({content : '❌️ Erreur lors de la création du fil, merci de contacter un Admin'});
+                    client.logger.error('command: call, user:' + user.username + ', reason: ' + error);
+                });
+
                 //Send success command message
                 interaction.reply({content : 'Call créé avec succès dans le salon <#' + quiJoueChannel + '>.', ephemeral: true});
             })
+            .catch((error) => {
+                interaction.reply({content: '❌️ Erreur lors de l\'ajout du message, merci de contacter un Admin'});
+                client.logger.error('command: call, user:' + user.username + ', reason: ' + error);
+            })
+        ;
     }
 }
