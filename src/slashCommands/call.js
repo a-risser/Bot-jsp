@@ -1,3 +1,5 @@
+const {GetGameEmoji} = require('/src/utils/emoji');
+
 module.exports = {
     name: 'call',
     description: 'Faire un call pour proposer une session de jeu.',
@@ -7,91 +9,91 @@ module.exports = {
     permissions: [],
     options: [
         {
+            name: 'jeu_1',
+            description: "Jeu concerné par le call.",
+            type: 8,
+            required: true,
+        },
+        {
             name: 'heure',
             description: "Heure de la session de jeu, au format ʰʰhᵐᵐ (ex: 21h30).",
             type: 3,
             required: true,
         },
         {
-            name: 'jeu',
-            description: "Jeu concerné par le call.",
-            type: 8,
-            required: true,
-        },
-        {
-            name: 'jeu1',
-            description: "Jeu concerné par le call.",
+            name: 'jeu_2',
+            description: "Autre jeu concerné par le call.",
             type: 8,
             required: false
         },
         {
-            name: 'jeu2',
-            description: "Jeu concerné par le call.",
+            name: 'jeu_3',
+            description: "Autre jeu concerné par le call.",
             type: 8,
             required: false
         },
         {
-            name: 'jeu3',
-            description: "Jeu concerné par le call.",
+            name: 'jeu_4',
+            description: "Autre jeu concerné par le call.",
             type: 8,
             required: false
         },
         {
-            name: 'jeu4',
-            description: "Jeu concerné par le call.",
+            name: 'jeu_5',
+            description: "Autre jeu concerné par le call.",
             type: 8,
             required: false
-        }
+        },
     ],
     run: async (client, interaction) => {
-
 
         const jspGuild = client.guilds.resolve(client.config.guildId);
         const quiJoueChannel = jspGuild.channels.resolve(client.config.channelCmdAdminId); //todo: client.config.channelQuiJoueId
 
-        const game = interaction.options.getRole('jeu');
-        const game1 = interaction.options.getRole('jeu1');
-        const game2 = interaction.options.getRole('jeu2');
-        const game3 = interaction.options.getRole('jeu3');
-        const game4 = interaction.options.getRole('jeu4');
-
-        let arrayGames = [];
-        arrayGames.push(game);
-        if(game1) arrayGames.push(game1);
-        if(game2) arrayGames.push(game2);
-        if(game3) arrayGames.push(game3);
-        if(game4) arrayGames.push(game4);
+        //push all games in an array
+        let games = [];
+        for (let n = 1; n <= 5; n++) {
+            if (interaction.options.getRole('jeu_' + n)) {
+                games.push(interaction.options.getRole('jeu_' + n));
+            }
+        }
 
         let time = interaction.options.getString('heure');
         //check time format
-        let timeRegex = /^([0-1][0-9]|2[0-3])[hH:]([0-5][0-9])$/;
-        if (!time.match(timeRegex)) {
+        if (!time.match(/^([0-1][0-9]|2[0-3])[hH:]([0-5][0-9])$/)) {
             interaction.reply({content : '⚠ "heure" n\'est pas au bon format. Requis : `ʰʰhᵐᵐ` (ex: 21h00).', ephemeral: true});
             client.logger.error('command: call, user:' + interaction.user.username + ', reason: wrong hours format')
             return;
         }
         //replace 'H' or ':' by 'h'
         time = time.replace(/[H:]/g, 'h');
-        let content = '**'+ interaction.user.username + '** veut jouer';
 
-        arrayGames = arrayGames.slice(1);
-
-        let first = true;
-        arrayGames.forEach(game=> {
-            if (first) {
-                content = content + ' à <@&' + game + '>';
-            } else {
-                content = content + 'ou à <@&' + game + '>';
+        //build content and get emojis
+        let content = '**'+ interaction.user.username + '** propose de jouer à ';
+        let emojisToAdd = [];
+        for (let [index, game] of games.entries()) {
+            content += '<@&' + game + '>';
+            if (index === games.length - 2) {
+                content += ' ou ';
+            }  else if (index !== games.length - 1) {
+                content += ', ';
             }
-            first = false;
-        })
-        content = content + ' à partir de ' + time;
 
+            emojisToAdd.push(GetGameEmoji(game));
+        }
+        content += ' à partir de **' + time + '** !';
+
+        //send message
         quiJoueChannel.send({ content: content })
             .then(message => {
                 //Add reactions
-                message.react("👍");
-                message.react("👎");
+                for (const emojiToAdd of emojisToAdd) {
+                    message.react(emojiToAdd).catch((error) => {
+                        client.logger.error('command: call, user:' + interaction.user.username + ', reason: ' + error);
+                    });
+                }
+                //Send success command message
+                interaction.reply({content : 'Call créé avec succès dans le salon <#' + quiJoueChannel + '>.', ephemeral: true});
             })
     }
 }
