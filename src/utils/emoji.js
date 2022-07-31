@@ -1,6 +1,5 @@
 function GetGameEmoji(game) {
-    let emojiName = game.name.replace(/[^\x00-\x7F]/g, "")
-        .trim()
+    let emojiName = game.name.replace(/[^a-zA-Z0-9]/g, '').trim()
         .split(/ |\B(?=[A-Z])/)
         .map(word => word.toLowerCase())
         .join('_')
