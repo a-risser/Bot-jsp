@@ -73,7 +73,7 @@ module.exports = {
                     .then(message => {
                         //Create thread
                         message.startThread({
-                            name: 'Merci d\'en discuter dans ce fil',
+                            name: 'Discutez de l\'event dans ce fil',
                             autoArchiveDuration: 'MAX',
                         }).catch((error) => {
                             interaction.reply({content : '❌️ Erreur lors de la création du fil, merci de contacter un Admin'});
