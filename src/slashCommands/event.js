@@ -1,4 +1,3 @@
-const {GetGameEmoji} = require('../utils/emoji');
 const {IsValidDateFormat, IsValidTimeFormat, BuildDateTimeObjectFromValidFormat, AddHourToDateTimeObject} = require("../utils/datetime");
 
 module.exports = {
@@ -72,9 +71,6 @@ module.exports = {
                 //send message
                 quiJoueChannel.send({ content: content })
                     .then(message => {
-                        //Add reactions
-                        message.react(GetGameEmoji(game));
-
                         //Create thread
                         message.startThread({
                             name: 'Merci d\'en discuter dans ce fil',
