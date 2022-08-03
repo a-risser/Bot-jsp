@@ -9,18 +9,15 @@ module.exports = async (client, message) => {
 
     //Get games roles
     const games = message.mentions.roles.filter(role => /[^\u0000-\u00ff]/.test(role.name)); //keep roles with emoji only
-
     if (games.size === 0) {return;}
 
     //Add games emojis to message
-    games.reverse().each(game => {
+    games.sort().each(game => {
         //get game emoji
         const emoji = GetGameEmoji(game);
         //add emoji to message
-        message.react(emoji).catch((error) => {
-            client.logger.error('event: call, user:' + user.username + ', reason: ' + error);
-        });
-    })
+        message.react(emoji).catch((error) => { client.logger.error('event: call, user:' + user.username + ', reason: ' + error); });
+    });
 
     //Create reply thread
     message.startThread({
