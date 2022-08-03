@@ -18,7 +18,7 @@ module.exports = async (client, message) => {
         const emoji = GetGameEmoji(game);
         //add emoji to message
         message.react(emoji).catch((error) => {
-            client.logger.error('command: call, user:' + user.username + ', reason: ' + error);
+            client.logger.error('event: call, user:' + user.username + ', reason: ' + error);
         });
     })
 
@@ -27,7 +27,7 @@ module.exports = async (client, message) => {
         name: 'Discutez du call dans ce fil',
         autoArchiveDuration: 60,
     }).catch((error) => {
-        client.logger.error('command: call, user:' + user.username + ', reason: ' + error);
+        client.logger.error('event: call, user:' + user.username + ', reason: ' + error);
     });
 
     //Create new thread
@@ -35,7 +35,7 @@ module.exports = async (client, message) => {
         name: 'Discutez du call dans ce fil',
         autoArchiveDuration: 60,
     }).catch((error) => {
-        client.logger.error('command: call, user:' + user.username + ', reason: ' + error);
+        client.logger.error('event: call, user:' + user.username + ', reason: ' + error);
     });*/
 
     //add hashtag emoji
@@ -58,7 +58,7 @@ module.exports = async (client, message) => {
                 autoArchiveDuration: 60,
             })
                 .catch((error) => {
-                    client.logger.error('command: call, user:' + user.username + ', reason: ' + error);
+                    client.logger.error('event: call, user:' + user.username + ', reason: ' + error);
                 });
         });*/
 
