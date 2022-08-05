@@ -66,7 +66,7 @@ module.exports = {
             .then((event) => {
                 //build content
                 const validTimeStamp = event.scheduledStartTimestamp.toString().slice(0, -3);
-                let content = `**${user.username}** propose de jouer à ${game.toString()}, le <t:${validTimeStamp}:F> (<t:${validTimeStamp}:R>).\n${event.url}`;
+                let content = `**${user.username}** propose de jouer à ${game.toString()}, le <t:${validTimeStamp}:F>.\n\n> 🏁 <t:${validTimeStamp}:R> \n\n${event.url}`;
 
                 //send message
                 quiJoueChannel.send({ content: content })
