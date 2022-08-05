@@ -1,4 +1,4 @@
-const {IsValidDateFormat, IsValidTimeFormat, BuildDateTimeObjectFromValidFormat, AddHourToDateTimeObject} = require("../utils/datetime");
+const {IsValidDateFormat, IsValidTimeFormat, BuildDateTimeObjectFromValidFormat} = require("../utils/datetime");
 
 module.exports = {
     name: 'event',
@@ -48,7 +48,6 @@ module.exports = {
             client.logger.error('command: call, user:' + user.username + ', reason: wrong hours format')
             return;
         }
-        const formattedTime = time.replace(/[H:]/g, 'h');
 
 
         let startDateObj = BuildDateTimeObjectFromValidFormat(date, time);
@@ -66,7 +65,8 @@ module.exports = {
         })
             .then((event) => {
                 //build content
-                let content = '**' + user.username + '** propose de jouer à ' + game.toString() + ' le **' + date + '** à **' + formattedTime + '** .\n' + event.url;
+                const validTimeStamp = event.scheduledStartTimestamp.toString().slice(0, -3);
+                let content = `**${user.username}** propose de jouer à ${game.toString()}, le <t:${validTimeStamp}:F> (<t:${validTimeStamp}:R>).\n${event.url}`;
 
                 //send message
                 quiJoueChannel.send({ content: content })
